@@ -14,11 +14,23 @@
   },
   "homepage": "https://github.com/dreamechoc/git-blame-lens#readme",
   "keywords": [
-    "git", "blame", "author", "commit", "history",
-    "lens", "annotation", "vcs", "source control",
-    "code review", "git log", "developer tools"
+    "git",
+    "blame",
+    "author",
+    "commit",
+    "history",
+    "lens",
+    "annotation",
+    "vcs",
+    "source control",
+    "code review",
+    "git log",
+    "developer tools"
   ],
-  "categories": ["SCM Providers"],
+  "categories": [
+    "SCM Providers"
+  ],
+  "icon": "icon.png",
   "galleryBanner": {
     "color": "#007ACC",
     "theme": "dark"
@@ -26,7 +38,6 @@
   "engines": {
     "vscode": "^1.74.0"
   },
-
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -50,17 +61,17 @@
       },
       {
         "command": "git-author.showBlameAnnotations",
-        "title": "Git Blame Lens: 显示 Blame 注释",
+        "title": "显示 Blame 注释",
         "icon": "$(eye)"
       },
       {
         "command": "git-author.hideBlameAnnotations",
-        "title": "Git Blame Lens: 隐藏 Blame 注释",
+        "title": "隐藏 Blame 注释",
         "icon": "$(eye-closed)"
       },
       {
         "command": "git-author.showCurrentLineCommit",
-        "title": "Git Blame Lens: 查看行提交详情",
+        "title": "查看行提交详情",
         "icon": "$(info)"
       }
     ],
@@ -149,11 +160,16 @@
     "lint": "eslint src --ext ts",
     "package": "vsce package",
     "publish": "vsce publish",
-    "generate-icon": "node generate-icon.js"
+    "generate-icon": "node generate-icon.js",
+    "choose-icon": "node choose-icon.js",
+    "setup": "node quick-setup.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.74.0",
     "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
     "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "canvas": "^3.1.1"
   }
 }
