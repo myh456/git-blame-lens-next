@@ -2,7 +2,7 @@
   "name": "git-blame-lens",
   "displayName": "Git Blame Lens",
   "description": "🎯 优雅的Git Blame可视化工具 | 显示代码行作者信息和提交历史 | 支持悬停详情和智能缓存",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "publisher": "dreamecho",
   "license": "MIT",
   "repository": {
