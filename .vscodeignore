@@ -1,0 +1,48 @@
+# 编译输出
+.vscode/**
+.vscode-test/**
+src/**
+.gitignore
+.yarnrc
+vsc-extension-quickstart.md
+**/tsconfig.json
+**/.eslintrc.json
+**/*.map
+**/*.ts
+
+# 开发文件
+node_modules/**
+*.vsix
+.DS_Store
+Thumbs.db
+
+# 源码和开发工具
+src/**
+tsconfig.json
+tslint.json
+.eslintrc.json
+.gitignore
+.npmignore
+
+# 测试文件
+test/**
+**/*.test.ts
+**/*.test.js
+
+# 文档源文件
+*.md.backup
+docs/**
+
+# 图标源文件
+icon.svg
+generate-icon.js
+
+# 发布相关
+PUBLISH.md
+.github/**
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
