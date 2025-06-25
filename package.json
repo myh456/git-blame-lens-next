@@ -7,12 +7,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/git-blame-lens.git"
+    "url": "https://github.com/dreamechoc/git-blame-lens.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/git-blame-lens/issues"
+    "url": "https://github.com/dreamechoc/git-blame-lens/issues"
   },
-  "homepage": "https://github.com/your-username/git-blame-lens#readme",
+  "homepage": "https://github.com/dreamechoc/git-blame-lens#readme",
   "keywords": [
     "git", "blame", "author", "commit", "history",
     "lens", "annotation", "vcs", "source control",
