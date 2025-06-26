@@ -70,6 +70,11 @@
         "icon": "$(eye-closed)"
       },
       {
+        "command": "git-author.refreshBlameAnnotations",
+        "title": "刷新 Blame 注释",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "git-author.showCurrentLineCommit",
         "title": "查看行提交详情",
         "icon": "$(info)"
@@ -88,27 +93,14 @@
           "when": "editorTextFocus && git-author.blameActive"
         },
         {
+          "command": "git-author.refreshBlameAnnotations",
+          "group": "navigation",
+          "when": "editorTextFocus && git-author.blameActive"
+        },
+        {
           "command": "git-author.showCurrentLineCommit",
           "group": "navigation",
           "when": "editorTextFocus && git-author.blameActive"
-        }
-      ]
-    },
-    "views": {
-      "explorer": [
-        {
-          "id": "gitBlameView",
-          "name": "Git Blame",
-          "when": "resourceExtname"
-        }
-      ]
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "gitBlame",
-          "title": "Git Blame",
-          "icon": "$(git-commit)"
         }
       ]
     },
@@ -139,15 +131,22 @@
         },
         "gitBlameLens.blameAnnotationWidth": {
           "type": "string",
-          "default": "18em",
+          "default": "15em",
           "description": "Blame注释区域的宽度"
         },
-        "gitBlameLens.maxProcessLines": {
+        "gitBlameLens.preloadLines": {
           "type": "number",
-          "default": 100,
+          "default": 30,
           "minimum": 10,
-          "maximum": 1000,
-          "description": "单次处理的最大行数"
+          "maximum": 100,
+          "description": "可见区域上下预加载的行数"
+        },
+        "gitBlameLens.scrollDebounceMs": {
+          "type": "number",
+          "default": 20,
+          "minimum": 0,
+          "maximum": 200,
+          "description": "滚动防抖延迟时间（毫秒）"
         }
       }
     }
@@ -170,6 +169,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
+    "@vscode/vsce": "^3.5.0",
     "canvas": "^3.1.1"
   }
 }

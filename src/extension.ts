@@ -75,6 +75,11 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.executeCommand('setContext', 'git-author.blameActive', false);
     });
 
+    // 刷新Git Blame注释命令
+    const refreshBlameAnnotationsCommand = vscode.commands.registerCommand('git-author.refreshBlameAnnotations', async () => {
+        await blameDecorationManager.refresh();
+    });
+
     // 显示当前行提交详情命令
     const showCurrentLineCommitCommand = vscode.commands.registerCommand('git-author.showCurrentLineCommit',
         async () => {
@@ -137,6 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
         showLineAuthorInfoCommand,
         showBlameAnnotationsCommand,
         hideBlameAnnotationsCommand,
+        refreshBlameAnnotationsCommand,
         showCurrentLineCommitCommand,
         onSelectionChange,
         onActiveEditorChange,

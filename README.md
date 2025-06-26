@@ -13,6 +13,10 @@
 - 🔍 **实时显示**: 在状态栏实时显示当前光标所在行的Git作者信息
 - 🖱️ **悬停提示**: 鼠标悬停在代码行上时显示详细的提交信息
 - ⚡ **性能优化**: 智能缓存机制，避免重复的Git查询
+- 📜 **动态加载**: 只处理可见行和预加载区域，性能优异
+- ⚡ **即时响应**: 0延迟显示已缓存内容，20ms加载新内容
+- 🔄 **预测性加载**: 智能预测滚动方向，提前加载内容
+- 🚀 **超流畅体验**: 并行加载，逐行更新，无卡顿感
 - 🎨 **美观界面**: 使用VSCode图标和Markdown格式化显示信息
 - ⚙️ **可配置**: 支持自定义显示选项
 
@@ -59,7 +63,8 @@
 - `gitBlameLens.enableBlameAnnotations`: 启动时自动显示Git blame注释 (默认: false)
 - `gitBlameLens.recentCommitThreshold`: 最近提交的天数阈值，用星号标记 (默认: 3天)
 - `gitBlameLens.blameAnnotationWidth`: Blame注释区域的宽度 (默认: 18em)
-- `gitBlameLens.maxProcessLines`: 单次处理的最大行数 (默认: 100行)
+- `gitBlameLens.preloadLines`: 可见区域上下预加载的行数 (默认: 30行)
+- `gitBlameLens.scrollDebounceMs`: 滚动防抖延迟时间 (默认: 20毫秒)
 
 ## 系统要求
 

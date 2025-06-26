@@ -33,12 +33,17 @@ test/**
 *.md.backup
 docs/**
 
-# 图标源文件
+# 图标源文件和工具
 icon.svg
+icon-simple.svg
+icon-minimal.svg
 generate-icon.js
+choose-icon.js
+quick-setup.js
 
 # 发布相关
 PUBLISH.md
+PRE-PUBLISH-CHECKLIST.md
 .github/**
 
 # 日志文件
