@@ -1,6 +1,6 @@
 # Git Blame Lens
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://marketplace.visualstudio.com/items?itemName=your-publisher-name.git-blame-lens)
+[![Version](https://img.shields.io/badge/version-0.0.2-blue.svg)](https://marketplace.visualstudio.com/items?itemName=your-publisher-name.git-blame-lens)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![VSCode](https://img.shields.io/badge/VSCode-1.74.0+-brightgreen.svg)](https://code.visualstudio.com/)
 
@@ -83,25 +83,6 @@
 2. 在VSCode中按 `Ctrl+Shift+P` 打开命令面板
 3. 输入 "Extensions: Install from VSIX..."
 4. 选择下载的 `.vsix` 文件
-
-## 开发
-
-### 构建项目
-```bash
-npm install
-npm run compile
-```
-
-### 调试
-1. 在VSCode中打开项目
-2. 按 `F5` 启动调试会话
-3. 在新的VSCode窗口中测试扩展
-
-### 打包
-```bash
-npm install -g vsce
-vsce package
-```
 
 ## 许可证
 
