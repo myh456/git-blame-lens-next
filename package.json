@@ -44,13 +44,11 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-
       {
         "command": "git-author.showFullCommit",
         "title": "查看文件差异",
         "icon": "$(diff)"
       },
-
       {
         "command": "git-author.showBlameAnnotations",
         "title": "显示 Blame 注释",
@@ -66,8 +64,6 @@
         "title": "刷新 Blame 注释",
         "icon": "$(refresh)"
       }
-
-
     ],
     "menus": {
       "editor/context": [
@@ -145,7 +141,8 @@
     "publish": "vsce publish",
     "generate-icon": "node generate-icon.js",
     "choose-icon": "node choose-icon.js",
-    "setup": "node quick-setup.js"
+    "setup": "node quick-setup.js",
+    "dist" : "npx vsce package"
   },
   "devDependencies": {
     "@types/node": "16.x",
@@ -153,7 +150,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@vscode/vsce": "^3.5.0",
+    "@vscode/vsce": "^3.6.0",
     "canvas": "^3.1.1"
   }
 }
