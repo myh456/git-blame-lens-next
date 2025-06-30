@@ -55,7 +55,7 @@ export class HoverProvider implements vscode.HoverProvider {
 
         // 添加操作按钮
         const showFullCommitCommand = `command:git-author.showFullCommit?${encodeURIComponent(JSON.stringify([authorInfo.commit]))}`;
-        markdown.appendMarkdown(`[$(eye) 查看完整提交](${showFullCommitCommand})`);
+        markdown.appendMarkdown(`[$(diff) 查看文件差异](${showFullCommitCommand})`);
 
         return new vscode.Hover(markdown);
     }

@@ -13,13 +13,16 @@ export interface AuthorInfo {
 
 export class GitAuthorProvider {
     private cache: Map<string, AuthorInfo | null> = new Map();
-    private cacheTimeout = 30000; // 30秒缓存
+    private cacheTimeout = 5000; // 减少到5秒缓存，更快响应文件变化
 
     async getAuthorInfo(filePath: string, lineNumber: number): Promise<AuthorInfo | null> {
         const cacheKey = `${filePath}:${lineNumber}`;
-        
-        // 检查缓存
-        if (this.cache.has(cacheKey)) {
+
+        // 检查文件是否有未保存的修改
+        const hasUnsavedChanges = await this.hasUnsavedChanges(filePath);
+
+        // 如果文件有未保存的修改，不使用缓存，直接查询
+        if (!hasUnsavedChanges && this.cache.has(cacheKey)) {
             return this.cache.get(cacheKey) || null;
         }
 
@@ -31,30 +34,71 @@ export class GitAuthorProvider {
 
             const relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
             const authorInfo = await this.executeGitBlame(workspaceFolder.uri.fsPath, relativePath, lineNumber);
-            
-            // 缓存结果
-            this.cache.set(cacheKey, authorInfo);
-            
-            // 设置缓存过期
-            setTimeout(() => {
-                this.cache.delete(cacheKey);
-            }, this.cacheTimeout);
+
+            // 只有在文件没有未保存修改时才缓存结果
+            if (!hasUnsavedChanges) {
+                this.cache.set(cacheKey, authorInfo);
+
+                // 设置缓存过期
+                setTimeout(() => {
+                    this.cache.delete(cacheKey);
+                }, this.cacheTimeout);
+            }
 
             return authorInfo;
         } catch (error) {
             console.error('Error getting git author info:', error);
-            this.cache.set(cacheKey, null);
+            // 有未保存修改时不缓存错误结果
+            if (!hasUnsavedChanges) {
+                this.cache.set(cacheKey, null);
+            }
             return null;
         }
     }
 
+    /**
+     * 检查文件是否有未保存的修改
+     */
+    private async hasUnsavedChanges(filePath: string): Promise<boolean> {
+        const document = vscode.workspace.textDocuments.find(doc => doc.uri.fsPath === filePath);
+        return document ? document.isDirty : false;
+    }
+
+    /**
+     * 清除指定文件的所有缓存
+     * 当文件被修改或保存时调用
+     */
+    clearFileCache(filePath: string): void {
+        const keysToDelete: string[] = [];
+        for (const key of this.cache.keys()) {
+            if (key.startsWith(`${filePath}:`)) {
+                keysToDelete.push(key);
+            }
+        }
+        keysToDelete.forEach(key => this.cache.delete(key));
+        console.log(`Cleared ${keysToDelete.length} cache entries for file: ${filePath}`);
+    }
+
+    /**
+     * 清除所有缓存
+     */
+    clearAllCache(): void {
+        const size = this.cache.size;
+        this.cache.clear();
+        console.log(`Cleared all ${size} cache entries`);
+    }
+
     private executeGitBlame(workingDir: string, filePath: string, lineNumber: number): Promise<AuthorInfo | null> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             // 使用git blame获取指定行的信息
+            // 添加 --show-stats 来获取更详细的信息
             const command = `git blame -L ${lineNumber},${lineNumber} --porcelain "${filePath}"`;
-            
+
+            // console.log(`Executing git blame: ${command}`);
+
             exec(command, { cwd: workingDir }, (error, stdout, stderr) => {
                 if (error) {
+                    console.log(`Git blame error for line ${lineNumber}:`, error.message);
                     if (error.message.includes('not a git repository') ||
                         error.message.includes('no such file or directory') ||
                         error.message.includes('no such path') ||
@@ -68,7 +112,7 @@ export class GitAuthorProvider {
                 }
 
                 if (stderr) {
-                    console.warn('Git blame warning:', stderr);
+                    // console.warn(`Git blame warning for line ${lineNumber}:`, stderr);
                     // 如果stderr包含关于未提交行的信息，也返回null
                     if (stderr.includes('has only') || stderr.includes('beyond end of file')) {
                         resolve(null);
@@ -76,10 +120,14 @@ export class GitAuthorProvider {
                     }
                 }
 
+                // console.log(`Git blame output for line ${lineNumber}:`, stdout.substring(0, 200) + '...');
+
                 try {
                     const authorInfo = this.parseGitBlameOutput(stdout, lineNumber);
+                    // console.log(`Parsed author info for line ${lineNumber}:`, authorInfo);
                     resolve(authorInfo);
                 } catch (parseError) {
+                    console.error(`Parse error for line ${lineNumber}:`, parseError);
                     resolve(null);
                 }
             });

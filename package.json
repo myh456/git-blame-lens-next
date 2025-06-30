@@ -2,7 +2,7 @@
   "name": "git-blame-lens",
   "displayName": "Git Blame Lens",
   "description": "🎯 优雅的Git Blame可视化工具 | 显示代码行作者信息和提交历史 | 支持悬停详情和智能缓存",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "publisher": "dreamecho",
   "license": "MIT",
   "repository": {
@@ -44,21 +44,13 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      {
-        "command": "git-author.showAuthor",
-        "title": "Git Blame Lens: 显示作者信息",
-        "icon": "$(person)"
-      },
+
       {
         "command": "git-author.showFullCommit",
-        "title": "Git Blame Lens: 显示完整提交信息",
-        "icon": "$(git-commit)"
+        "title": "查看文件差异",
+        "icon": "$(diff)"
       },
-      {
-        "command": "git-author.clearCache",
-        "title": "Git Blame Lens: 清除缓存",
-        "icon": "$(refresh)"
-      },
+
       {
         "command": "git-author.showBlameAnnotations",
         "title": "显示 Blame 注释",
@@ -73,33 +65,25 @@
         "command": "git-author.refreshBlameAnnotations",
         "title": "刷新 Blame 注释",
         "icon": "$(refresh)"
-      },
-      {
-        "command": "git-author.showCurrentLineCommit",
-        "title": "查看行提交详情",
-        "icon": "$(info)"
       }
+
+
     ],
     "menus": {
       "editor/context": [
         {
           "command": "git-author.showBlameAnnotations",
-          "group": "navigation",
+          "group": "git-blame@1",
           "when": "editorTextFocus && !git-author.blameActive"
         },
         {
           "command": "git-author.hideBlameAnnotations",
-          "group": "navigation",
+          "group": "git-blame@1",
           "when": "editorTextFocus && git-author.blameActive"
         },
         {
           "command": "git-author.refreshBlameAnnotations",
-          "group": "navigation",
-          "when": "editorTextFocus && git-author.blameActive"
-        },
-        {
-          "command": "git-author.showCurrentLineCommit",
-          "group": "navigation",
+          "group": "git-blame@2",
           "when": "editorTextFocus && git-author.blameActive"
         }
       ]
