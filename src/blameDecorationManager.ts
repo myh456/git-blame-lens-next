@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { GitAuthorProvider, AuthorInfo } from './gitAuthorProvider';
+import { getLogger } from './logger';
+import { GitAuthorProvider } from './gitAuthorProvider';
 import { BlameCache } from './blameCache';
 import { BlameDecorator } from './blameDecorator';
 import { DocumentChangeHandler } from './documentChangeHandler';
@@ -41,7 +42,7 @@ export class BlameDecorationManager implements vscode.Disposable {
         this.isActive = true;
         await this.showBlameDecorations();
         this.setupScrollListener();
-        vscode.window.showInformationMessage('Git Blame 注释已开启');
+        getLogger().info('Git Blame 注释已开启');
     }
 
     async hide(): Promise<void> {
@@ -49,7 +50,7 @@ export class BlameDecorationManager implements vscode.Disposable {
         this.isActive = false;
         this.hideBlameDecorations();
         this.disposeScrollListener();
-        vscode.window.showInformationMessage('Git Blame 注释已关闭');
+        getLogger().info('Git Blame 注释已关闭');
     }
 
     async refresh(): Promise<void> {
@@ -57,7 +58,7 @@ export class BlameDecorationManager implements vscode.Disposable {
         this.cache.clearAll();
         this.gitAuthorProvider.clearFileCache(this.currentEditor.document.uri.fsPath);
         await this.showBlameDecorations();
-        vscode.window.showInformationMessage('Git Blame 信息已刷新');
+        getLogger().info('Git Blame 信息已刷新');
     }
 
     private async showBlameDecorations(): Promise<void> {
@@ -83,11 +84,12 @@ export class BlameDecorationManager implements vscode.Disposable {
     private async loadVisibleBlameInfo(): Promise<void> {
         if (!this.currentEditor) return;
 
+        const config = vscode.workspace.getConfiguration('gitBlameLens');
         const editor = this.currentEditor;
         const visibleRanges = editor.visibleRanges;
         if (!visibleRanges.length) return;
 
-        const preload = 20;
+        const preload = config.get<number>('preloadLines', 30);
         const first = Math.max(0, visibleRanges[0].start.line - preload);
         const last = Math.min(editor.document.lineCount - 1, visibleRanges[visibleRanges.length - 1].end.line + preload);
 
@@ -111,7 +113,7 @@ export class BlameDecorationManager implements vscode.Disposable {
             this.cache.setBlameInfo(line, info ?? null);
             if (info) this.cache.setDisplayText(line, this.decorator.generateBlameDisplayText(info));
         } catch (e) {
-            console.error(`Blame load error on line ${line + 1}:`, e);
+            getLogger().error(`Blame load error on line ${line + 1}:`, e);
             this.cache.setBlameInfo(line, null);
         }
     }
@@ -129,10 +131,11 @@ export class BlameDecorationManager implements vscode.Disposable {
         this.scrollListener = vscode.window.onDidChangeTextEditorVisibleRanges(async e => {
             if (e.textEditor !== this.currentEditor || !this.isActive) return;
             if (this.updateTimeout) clearTimeout(this.updateTimeout);
+            const config = vscode.workspace.getConfiguration('gitBlameLens');
             this.updateTimeout = setTimeout(async () => {
                 await this.loadVisibleBlameInfo();
                 this.applyBlameDecorations();
-            }, 100);
+            }, config.get<number>('scrollDebounceMs', 100));
         });
     }
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-// Git Blame Lens 快速设置脚本
+// Git Blame Lens Next 快速设置脚本
 const fs = require('fs');
 const { execSync } = require('child_process');
 
-console.log('🚀 Git Blame Lens 快速设置\n');
+console.log('🚀 Git Blame Lens Next 快速设置\n');
 
 // 1. 检查图标文件
 console.log('📋 检查文件状态...');
@@ -18,7 +18,7 @@ console.log(`📁 icon.png: ${iconExists ? '✅' : '❌'}`);
 // 2. 尝试生成PNG图标
 if (!iconExists && svgExists) {
     console.log('\n🎨 尝试生成PNG图标...');
-    
+
     try {
         // 检查是否安装了canvas
         try {
@@ -42,18 +42,18 @@ console.log('\n⚙️  检查配置...');
 
 try {
     const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-    
+
     const checks = [
         { key: 'publisher', value: packageJson.publisher, required: true },
         { key: 'icon', value: packageJson.icon, required: false },
         { key: 'repository', value: packageJson.repository?.url, required: false }
     ];
-    
+
     checks.forEach(check => {
         const status = check.value && check.value !== 'your-publisher-name' && !check.value.includes('your-username') ? '✅' : '⚠️';
         console.log(`${status} ${check.key}: ${check.value || '未设置'}`);
     });
-    
+
 } catch (error) {
     console.log('❌ 读取package.json失败');
 }
@@ -89,9 +89,9 @@ console.log('\n' + '='.repeat(50));
 if (allReady) {
     console.log('🎉 恭喜！扩展已准备就绪，可以发布了！');
     console.log('\n📋 发布步骤：');
-    console.log('1. npm install -g vsce');
-    console.log('2. vsce login your-publisher-name');
-    console.log('3. vsce publish');
+    console.log('1. npm run package');
+    console.log('2. 登录marketplace.visualstudio.com');
+    console.log('3. 上传打包好的vsix');
 } else {
     console.log('⚠️  还有一些项目需要完成才能发布');
     console.log('\n💡 下一步：');

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { getLogger } from './logger';
 import { GitAuthorProvider, AuthorInfo } from './gitAuthorProvider';
 
 export class HoverProvider implements vscode.HoverProvider {
@@ -13,8 +14,8 @@ export class HoverProvider implements vscode.HoverProvider {
         position: vscode.Position,
         token: vscode.CancellationToken
     ): Promise<vscode.Hover | null> {
-        const config = vscode.workspace.getConfiguration('gitAuthor');
-        if (!config.get('showOnHover', true)) {
+        const config = vscode.workspace.getConfiguration('gitBlameLens');
+        if (config.get<string>('blameInfoType', 'InlayHints') !== 'HoverPopup') {
             return null;
         }
 
@@ -31,7 +32,7 @@ export class HoverProvider implements vscode.HoverProvider {
 
             return this.createHover(authorInfo);
         } catch (error) {
-            console.error('Error in hover provider:', error);
+            getLogger().error('Error in hover provider:', error);
             return null;
         }
     }
@@ -41,21 +42,18 @@ export class HoverProvider implements vscode.HoverProvider {
         markdown.isTrusted = true;
 
         // 添加标题
-        markdown.appendMarkdown(`### $(git-commit) Git 提交信息\n\n`);
+        markdown.appendMarkdown(`###Git提交信息\n\n`);
 
         // 创建信息表格
-        markdown.appendMarkdown(`| | |\n`);
-        markdown.appendMarkdown(`|---|---|\n`);
-        markdown.appendMarkdown(`| $(person) **作者** | ${authorInfo.author} |\n`);
-        markdown.appendMarkdown(`| $(mail) **邮箱** | ${authorInfo.email} |\n`);
-        markdown.appendMarkdown(`| $(git-commit) **提交** | \`${authorInfo.commit.substring(0, 12)}\` |\n`);
-        markdown.appendMarkdown(`| $(clock) **时间** | ${authorInfo.date} |\n`);
-        markdown.appendMarkdown(`| $(note) **摘要** | ${authorInfo.summary} |\n`);
-        markdown.appendMarkdown(`| $(location) **行号** | ${authorInfo.line} |\n\n`);
+        markdown.appendMarkdown(`| | |\n|---|---|\n`);
+        markdown.appendMarkdown(`|**作者：**| ${authorInfo.author} |\n`);
+        markdown.appendMarkdown(`|**提交：**| \`${authorInfo.commit.substring(0, 12)}\` |\n`);
+        markdown.appendMarkdown(`|**时间：**| ${authorInfo.date} |\n`);
+        markdown.appendMarkdown(`|**摘要：**| ${authorInfo.summary} |\n\n`);
 
         // 添加操作按钮
-        const showFullCommitCommand = `command:git-author.showFullCommit?${encodeURIComponent(JSON.stringify([authorInfo.commit]))}`;
-        markdown.appendMarkdown(`[$(diff) 查看文件差异](${showFullCommitCommand})`);
+        const showFullCommitCommand = `command:gitBlameLens.showFullCommit?${encodeURIComponent(JSON.stringify([authorInfo.commit]))}`;
+        markdown.appendMarkdown(`[查看文件差异](${showFullCommitCommand})`);
 
         return new vscode.Hover(markdown);
     }

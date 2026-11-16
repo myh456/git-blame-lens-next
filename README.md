@@ -1,6 +1,6 @@
-# Git Blame Lens
+# Git Blame Lens Next
 
-[![Version](https://img.shields.io/badge/version-0.0.4-blue.svg)](https://marketplace.visualstudio.com/items?itemName=dreamecho.git-blame-lens)
+[![Version](https://img.shields.io/badge/version-0.0.5-blue.svg)](https://marketplace.visualstudio.com/items?itemName=myh456.git-blame-lens-next)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![VSCode](https://img.shields.io/badge/VSCode-1.74.0+-brightgreen.svg)](https://code.visualstudio.com/)
 
@@ -39,12 +39,11 @@
 - 格式：`👤 作者名 (提交哈希)`
 - 点击状态栏项目可以显示详细信息
 
-### 悬停提示
-将鼠标悬停在任意代码行上，会显示包含以下信息的详细提示：
-- 作者姓名和邮箱
+### 内联提示和悬停提示
+在当前光标所在行行尾添加内联提示，会显示改行提交日期与提交人。将鼠标悬停在内联提示上，会显示包含以下信息的详细提示：
+- 作者姓名
 - 提交哈希和时间
 - 提交摘要
-- 行号
 - **查看文件差异**按钮：一键查看该提交的文件变更
 
 ### Git Blame显示
@@ -108,15 +107,14 @@
 
 ## ⚙️ 配置选项
 
-在VSCode设置中搜索 "Git Blame Lens" 可以找到以下配置选项：
+在VSCode设置中搜索 "Git Blame Lens Next" 可以找到以下配置选项：
 
 - `gitBlameLens.showInStatusBar`: 在状态栏显示当前行的Git作者信息 (默认: true)
-- `gitBlameLens.showOnHover`: 鼠标悬停时显示详细的提交信息 (默认: true)
-- `gitBlameLens.enableBlameAnnotations`: 启动时自动显示Git blame注释 (默认: false)
+- `gitBlameLens.blameInfoType`: Git提交信息的显示方式 (默认: InlayHints)
 - `gitBlameLens.recentCommitThreshold`: 最近提交的天数阈值，用星号标记 (默认: 3天)
-- `gitBlameLens.blameAnnotationWidth`: Blame注释区域的宽度 (默认: 18em)
-- `gitBlameLens.preloadLines`: 可见区域上下预加载的行数 (默认: 30行)
-- `gitBlameLens.scrollDebounceMs`: 滚动防抖延迟时间 (默认: 20毫秒)
+- `gitBlameLens.blameAnnotationWidth`: Blame注释区域的宽度 (默认: 15em)
+- `gitBlameLens.preloadLines`: 可见区域上下预加载的行数 (默认: 20行)
+- `gitBlameLens.scrollDebounceMs`: 滚动防抖延迟时间 (默认: 100毫秒)
 
 ## 技术亮点
 
@@ -145,8 +143,9 @@
 
 ## 安装方法
 
+可直接从VS Marketplace下载
 1. 在VSCode中打开扩展面板 (`Ctrl+Shift+X`)
-2. 搜索 "Git Author"
+2. 搜索 "Git Blame Lens Next"
 3. 点击安装
 
 或者从VSIX文件安装：
@@ -159,11 +158,20 @@
 
 MIT License
 
-## 贡献
-
-欢迎提交Issue和Pull Request！
-
 ## 更新日志
+
+### 0.0.5 (2026-11-16)
+
+### 新增
+- ✨ **内联提示样式提交信息**：新增当前行行尾内联提示显示提交信息，可在设置中改回原有悬停提示
+
+### 改进
+- 📊 **完善调试日志**：新增LogOutputChannel，可在输出面板直接查看插件日志，同时将原有信息通知改为日志输出
+- 📈 **修改文件差异比较逻辑**：将差异比较改为比较父提交与当前提交之间的差异
+
+## 修复
+- 🐛 修复配置文件不生效问题
+- 📑 修复查看文件差异报错问题
 
 ### 0.0.4 (2024-12-29)
 **🎯 重大架构重构和功能优化**
@@ -217,3 +225,6 @@ MIT License
 - 状态栏显示
 - 悬停提示
 - 缓存机制
+
+## 致谢
+🤝 本项目fork自[Git Blame Lens](https://github.com/dreamechoc/git-blame-lens)，原作者dreamechoc，感谢原作者的贡献。

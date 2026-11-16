@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { getLogger } from './logger';
 import { BlameCache } from './blameCache';
 
 /**
@@ -25,13 +26,13 @@ export class DocumentChangeHandler {
         const startLine = range.start.line;
         const endLine = range.end.line;
 
-        console.log(`Document change: line ${startLine}-${endLine}, text: "${text.substring(0, 50)}..."`);
+        getLogger().info(`Document change: line ${startLine}-${endLine}, text: "${text.substring(0, 50)}..."`);
 
         // 计算行数变化
         const linesDelta = this.calculateLinesDelta(change);
-        
+
         if (linesDelta !== 0) {
-            console.log(`Lines delta: ${linesDelta}, clearing affected cache to ensure consistency`);
+            getLogger().info(`Lines delta: ${linesDelta}, clearing affected cache to ensure consistency`);
             // 有行号变化时，只清除受影响的范围，而不是从修改位置往下的所有内容
             const affectedStart = Math.max(0, startLine - 5);  // 向上清除5行
             const affectedEnd = startLine + Math.abs(linesDelta) + 10;  // 向下清除变化行数+10行
@@ -44,23 +45,23 @@ export class DocumentChangeHandler {
             if (linesDelta > 0) {
                 for (let line = startLine; line < startLine + linesDelta; line++) {
                     this.cache.markLineAsModified(line);
-                    console.log(`Marked inserted line ${line} as modified`);
+                    getLogger().info(`Marked inserted line ${line} as modified`);
                 }
             } else {
                 // 对于其他修改，标记原始行
                 for (let line = startLine; line <= endLine; line++) {
                     this.cache.markLineAsModified(line);
-                    console.log(`Marked line ${line} as modified`);
+                    getLogger().info(`Marked line ${line} as modified`);
                 }
             }
         }
-        
+
         // 清除受影响区域的缓存（需要重新加载的行）
         const clearStart = Math.max(0, startLine - 1);
         const clearEnd = startLine + Math.max(Math.abs(linesDelta), endLine - startLine) + 1;
-        
+
         this.cache.clearRange(clearStart, clearEnd);
-        console.log(`Cleared cache for lines ${clearStart}-${clearEnd}`);
+        getLogger().info(`Cleared cache for lines ${clearStart}-${clearEnd}`);
     }
 
     /**
@@ -70,16 +71,16 @@ export class DocumentChangeHandler {
         const { range, text } = change;
         const startLine = range.start.line;
         const endLine = range.end.line;
-        
+
         // 计算删除的行数
         const deletedLines = endLine - startLine;
-        
+
         // 计算插入的行数（通过统计换行符）
         const insertedLines = (text.match(/\n/g) || []).length;
-        
+
         const delta = insertedLines - deletedLines;
-        console.log(`Lines calculation: deleted=${deletedLines}, inserted=${insertedLines}, delta=${delta}`);
-        
+        getLogger().info(`Lines calculation: deleted=${deletedLines}, inserted=${insertedLines}, delta=${delta}`);
+
         return delta;
     }
 
@@ -93,11 +94,11 @@ export class DocumentChangeHandler {
         const startChar = range.start.character;
         const endChar = range.end.character;
 
-        console.log(`Change analysis: line ${startLine}-${endLine}, char ${startChar}-${endChar}, text: "${text}"`);
+        getLogger().info(`Change analysis: line ${startLine}-${endLine}, char ${startChar}-${endChar}, text: "${text}"`);
 
         // 情况1：纯换行操作（按回车键）
         if ((text === '\n' || text === '\r\n') && startLine === endLine && startChar === endChar) {
-            console.log('Pure newline insertion - not modifying original line');
+            getLogger().info('Pure newline insertion - not modifying original line');
             return false;
         }
 
@@ -105,17 +106,17 @@ export class DocumentChangeHandler {
         if (text === '') {
             // 删除整行（包括换行符）
             if (startChar === 0 && endLine > startLine) {
-                console.log('Deleting entire line(s) - not modifying other lines');
+                getLogger().info('Deleting entire line(s) - not modifying other lines');
                 return false;
             }
             // 在行内删除内容
             if (startLine === endLine && startChar < endChar) {
-                console.log('Deleting content within line - modifying line');
+                getLogger().info('Deleting content within line - modifying line');
                 return true;
             }
             // 删除跨行内容，起始行被修改
             if (startLine < endLine) {
-                console.log('Deleting across lines - modifying start line');
+                getLogger().info('Deleting across lines - modifying start line');
                 return true;
             }
         }
@@ -124,29 +125,29 @@ export class DocumentChangeHandler {
         if (startLine === endLine && startChar === endChar) {
             // 插入非空白文本
             if (text.trim() !== '' && text !== '\n' && text !== '\r\n') {
-                console.log('Inserting text within line - modifying line');
+                getLogger().info('Inserting text within line - modifying line');
                 return true;
             }
             // 插入只包含换行的文本（如粘贴多行）
             if (text.includes('\n') && text.trim() !== '') {
-                console.log('Inserting multi-line text - modifying start line');
+                getLogger().info('Inserting multi-line text - modifying start line');
                 return true;
             }
         }
 
         // 情况4：替换操作
         if (startLine === endLine && startChar < endChar && text !== '') {
-            console.log('Replacing content within line - modifying line');
+            getLogger().info('Replacing content within line - modifying line');
             return true;
         }
 
         // 情况5：跨行替换
         if (startLine < endLine && text !== '') {
-            console.log('Replacing across lines - modifying start line');
+            getLogger().info('Replacing across lines - modifying start line');
             return true;
         }
 
-        console.log('No line content modification detected');
+        getLogger().info('No line content modification detected');
         return false;
     }
 

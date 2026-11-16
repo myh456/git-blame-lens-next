@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { getLogger } from './logger';
 import { AuthorInfo } from './gitAuthorProvider';
 
 /**
@@ -106,7 +107,7 @@ export class BlameCache {
      */
     clearFromLine(fromLine: number): void {
         const keysToDelete: number[] = [];
-        
+
         // 收集需要删除的键
         for (const lineIndex of this.blameInfoMap.keys()) {
             if (lineIndex >= fromLine) {
@@ -125,8 +126,6 @@ export class BlameCache {
         for (const key of uniqueKeys) {
             this.deleteLine(key);
         }
-
-        // console.log(`Cleared cache for ${uniqueKeys.length} lines from line ${fromLine}`);
     }
 
     /**
@@ -136,7 +135,7 @@ export class BlameCache {
         for (let line = startLine; line <= endLine; line++) {
             this.deleteLine(line);
         }
-        console.log(`Cleared cache for lines ${startLine}-${endLine}`);
+        getLogger().info(`Cleared cache for lines ${startLine}-${endLine}`);
     }
 
     /**
@@ -145,7 +144,7 @@ export class BlameCache {
     clearAll(): void {
         this.blameInfoMap.clear();
         this.gitBlameDisplayMap.clear();
-        console.log('Cleared all blame cache');
+        getLogger().info('Cleared all blame cache');
     }
 
     /**
@@ -153,7 +152,7 @@ export class BlameCache {
      */
     clearModifiedLines(): void {
         this.modifiedLines.clear();
-        console.log('Cleared all modified lines');
+        getLogger().info('Cleared all modified lines');
     }
 
     /**

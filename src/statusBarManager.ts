@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { getLogger } from './logger';
 import { GitAuthorProvider, AuthorInfo } from './gitAuthorProvider';
 
 export class StatusBarManager implements vscode.Disposable {
@@ -12,7 +13,7 @@ export class StatusBarManager implements vscode.Disposable {
             vscode.StatusBarAlignment.Right,
             100
         );
-        this.statusBarItem.command = 'git-author.showAuthor';
+        this.statusBarItem.command = 'gitBlameLens.showAuthor';
         this.statusBarItem.show();
     }
 
@@ -21,7 +22,7 @@ export class StatusBarManager implements vscode.Disposable {
             return;
         }
 
-        const config = vscode.workspace.getConfiguration('gitAuthor');
+        const config = vscode.workspace.getConfiguration('gitBlameLens');
         if (!config.get('showInStatusBar', true)) {
             this.hideStatusBar();
             return;
@@ -45,7 +46,7 @@ export class StatusBarManager implements vscode.Disposable {
                 this.showNoInfo();
             }
         } catch (error) {
-            console.error('Error updating status bar:', error);
+            getLogger().error('Error updating status bar:', error);
             this.showError();
         } finally {
             this.isUpdating = false;
@@ -55,7 +56,7 @@ export class StatusBarManager implements vscode.Disposable {
     private showAuthorInfo(authorInfo: AuthorInfo): void {
         const shortCommit = authorInfo.commit.substring(0, 8);
         this.statusBarItem.text = `$(person) ${authorInfo.author} (${shortCommit})`;
-        
+
         const tooltip = new vscode.MarkdownString();
         tooltip.appendMarkdown(`**Git 作者信息**\n\n`);
         tooltip.appendMarkdown(`**作者:** ${authorInfo.author}\n\n`);
@@ -64,7 +65,7 @@ export class StatusBarManager implements vscode.Disposable {
         tooltip.appendMarkdown(`**时间:** ${authorInfo.date}\n\n`);
         tooltip.appendMarkdown(`**摘要:** ${authorInfo.summary}\n\n`);
         tooltip.appendMarkdown(`**行号:** ${authorInfo.line}`);
-        
+
         this.statusBarItem.tooltip = tooltip;
     }
 

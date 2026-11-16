@@ -1,4 +1,4 @@
-# 🚀 Git Blame Lens 发布前检查清单
+# 🚀 Git Blame Lens Next 发布前检查清单
 
 ## ✅ 必需文件检查
 
@@ -7,15 +7,15 @@
 - [x] **CHANGELOG.md** - 版本更新记录
 - [x] **LICENSE** - MIT许可证
 - [x] **.vscodeignore** - 发布时排除的文件
-- [ ] **icon.png** - 128x128px 扩展图标
+- [x] **icon.png** - 128x128px 扩展图标
 
 ## 🔧 配置检查
 
 ### package.json 必需字段
-- [x] `name`: git-blame-lens
-- [x] `displayName`: Git Blame Lens  
+- [x] `name`: git-blame-lens-next
+- [x] `displayName`: Git Blame Lens Next
 - [x] `description`: 详细描述
-- [x] `version`: 1.0.0
+- [x] `version`: 0.0.5
 - [ ] `publisher`: 替换为实际发布者名称
 - [x] `license`: MIT
 - [x] `repository`: GitHub仓库地址

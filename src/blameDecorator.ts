@@ -12,9 +12,12 @@ import { BlameCache } from './blameCache';
  * 4. 处理主题颜色适配
  */
 export class BlameDecorator {
-    private decorationType!: vscode.TextEditorDecorationType;           // 普通提交装饰器
-    private recentDecorationType!: vscode.TextEditorDecorationType;     // 最近提交装饰器
-    private emptyDecorationType!: vscode.TextEditorDecorationType;      // 空白行装饰器
+    private decorationType!: vscode.TextEditorDecorationType;
+    private recentDecorationType!: vscode.TextEditorDecorationType;
+    private emptyDecorationType!: vscode.TextEditorDecorationType;
+
+    private currentWidth: string = '15em';  // 缓存当前宽度
+    private maxDisplayChars: number = 14;   // 估算的字符容量
 
     constructor() {
         this.createDecorationTypes();
@@ -24,19 +27,23 @@ export class BlameDecorator {
      * 创建装饰器类型
      */
     private createDecorationTypes(): void {
-        // 通用装饰器样式配置
+        // 读配置
+        const config = vscode.workspace.getConfiguration('gitBlameLens');
+        this.currentWidth = config.get<string>('blameAnnotationWidth', '15em');
+        this.maxDisplayChars = this.calcMaxChars(this.currentWidth);
+
+        // 通用样式
         const baseStyle = {
-            margin: '0 12px 0 0',                    // 右边距8px，与代码分离
-            width: 'auto',                          // 自动宽度
-            textDecoration: 'none; font-size: 11px; font-family: monospace; white-space: nowrap; min-width: 150px; display: inline-block;'
+            margin: '0 5px 0 0',
+            width: this.currentWidth,
+            textDecoration: 'none',
         };
 
         // 普通提交装饰器
         this.decorationType = vscode.window.createTextEditorDecorationType({
             before: {
                 ...baseStyle,
-                color: new vscode.ThemeColor('editorCodeLens.foreground'),
-                textDecoration: baseStyle.textDecoration + ' opacity: 0.7;'
+                color: new vscode.ThemeColor('editorCodeLens.foreground')
             },
             rangeBehavior: vscode.DecorationRangeBehavior.OpenClosed
         });
@@ -46,8 +53,7 @@ export class BlameDecorator {
             before: {
                 ...baseStyle,
                 color: new vscode.ThemeColor('editorWarning.foreground'),
-                fontWeight: 'bold',
-                textDecoration: baseStyle.textDecoration + ' opacity: 0.8;'
+                fontWeight: 'bold'
             },
             rangeBehavior: vscode.DecorationRangeBehavior.OpenClosed
         });
@@ -56,8 +62,7 @@ export class BlameDecorator {
         this.emptyDecorationType = vscode.window.createTextEditorDecorationType({
             before: {
                 ...baseStyle,
-                color: new vscode.ThemeColor('editorLineNumber.foreground'),
-                textDecoration: baseStyle.textDecoration + ' opacity: 0.5;'
+                color: new vscode.ThemeColor('editorLineNumber.foreground')
             },
             rangeBehavior: vscode.DecorationRangeBehavior.OpenClosed
         });
@@ -136,28 +141,37 @@ export class BlameDecorator {
      */
     generateBlameDisplayText(authorInfo: AuthorInfo): string {
         const formattedDate = this.formatDate(authorInfo.date);
-        
-        // 截断过长的作者名，保持显示整洁
-        const authorName = authorInfo.author.length > 10
-            ? authorInfo.author.substring(0, 8) + '..'
-            : authorInfo.author;
+        const isRecent = this.isRecentCommit(authorInfo.date);
+        const suffix = isRecent ? '*' : ' ';
 
-        // 为最近3天内的提交添加星号标记
-        const authorWithMark = this.isRecentCommit(authorInfo.date)
-            ? `${authorName}*`
-            : authorName;
+        // 返回格式：日期 作者
+        return this.truncateWithEllipsis(
+            `${formattedDate}${suffix}${authorInfo.author}`,
+            this.maxDisplayChars
+        );
+    }
 
-        // 返回格式：日期 作者（去掉行号显示，减少视觉干扰）
-        return `${formattedDate} ${authorWithMark}`;
+    /**
+     * 配置变更时重建所有装饰器类型
+     */
+    recreate(): void {
+        // 清理所有可见编辑器上的旧装饰
+        vscode.window.visibleTextEditors.forEach(editor => this.clearDecorations(editor));
+
+        // 释放旧类型
+        this.decorationType?.dispose();
+        this.recentDecorationType?.dispose();
+        this.emptyDecorationType?.dispose();
+
+        // 用新配置重建
+        this.createDecorationTypes();
     }
 
     /**
      * 生成空白占位符，保持代码对齐
      */
     private generateEmptyPlaceholder(): string {
-        // 格式："MM-DD 作者名" 的典型长度
-        // MM-DD = 5字符，空格 = 1字符，作者名 = 8字符，总计约14字符
-        return '              '; // 14个空格
+        return ' ';
     }
 
     /**
@@ -182,7 +196,7 @@ export class BlameDecorator {
             const year = date.getFullYear().toString();
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
             const day = date.getDate().toString().padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            return `${year}/${month}/${day}`;
         } catch (error) {
             return dateString.substring(0, 10);
         }
@@ -197,10 +211,82 @@ export class BlameDecorator {
             const now = new Date();
             const diffTime = Math.abs(now.getTime() - commitDate.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays <= 3;
+            const config = vscode.workspace.getConfiguration('gitBlameLens');
+            return diffDays <= config.get<number>('recentCommitThreshold', 3);
         } catch (error) {
             return false;
         }
+    }
+
+    /**
+     * 把 CSS 宽度字符串估算成"等宽字符数"
+     */
+    private calcMaxChars(widthStr: string): number {
+        const m = widthStr.trim().match(/^(\d+(?:\.\d+)?)\s*(px|em|rem|ch|%)$/i);
+        if (!m) return 14;
+
+        const num = parseFloat(m[1]);
+        const unit = m[2].toLowerCase();
+
+        switch (unit) {
+            case 'ch':
+                return Math.max(1, Math.floor(num));
+            case 'em':
+            case 'rem':
+                // 等宽字体 1 字符约 0.6em
+                return Math.max(1, Math.floor(num / 0.6));
+            case 'px':
+                // 假设编辑器字号 14px，1 字符约 8.4px
+                return Math.max(1, Math.floor(num / 8.4));
+            case '%':
+            default:
+                return 14;
+        }
+    }
+
+    /** 计算字符串的"显示宽度"（CJK 字符算 2） */
+    private stringWidth(s: string): number {
+        let w = 0;
+        for (const ch of s) w += this.charWidth(ch);
+        return w;
+    }
+
+    /** 单字符显示宽度 */
+    private charWidth(ch: string): number {
+        const code = ch.codePointAt(0) ?? 0;
+        // 常见 CJK / 全角范围
+        if (
+            (code >= 0x1100 && code <= 0x115F) ||
+            (code >= 0x2E80 && code <= 0xA4CF) ||
+            (code >= 0xAC00 && code <= 0xD7A3) ||
+            (code >= 0xF900 && code <= 0xFAFF) ||
+            (code >= 0xFE30 && code <= 0xFE4F) ||
+            (code >= 0xFF00 && code <= 0xFF60) ||
+            (code >= 0xFFE0 && code <= 0xFFE6) ||
+            (code >= 0x20000 && code <= 0x3FFFD)
+        ) {
+            return 2;
+        }
+        return 1;
+    }
+
+    /**
+     * 按显示宽度截断，超出时追加省略号
+     */
+    private truncateWithEllipsis(text: string, maxWidth: number): string {
+        if (this.stringWidth(text) <= maxWidth) return text;
+
+        // 留 1 个字符给省略号
+        const target = Math.max(0, maxWidth - 1);
+        let w = 0;
+        let out = '';
+        for (const ch of text) {
+            const cw = this.charWidth(ch);
+            if (w + cw > target) break;
+            out += ch;
+            w += cw;
+        }
+        return out + '…';
     }
 
     /**

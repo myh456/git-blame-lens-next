@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
 import * as path from 'path';
+import { getLogger } from './logger';
+import { exec } from 'child_process';
 
 export interface AuthorInfo {
     author: string;
@@ -47,7 +48,7 @@ export class GitAuthorProvider {
 
             return authorInfo;
         } catch (error) {
-            console.error('Error getting git author info:', error);
+            getLogger().error('Error getting Git Blame Lens Next info:', error);
             // 有未保存修改时不缓存错误结果
             if (!hasUnsavedChanges) {
                 this.cache.set(cacheKey, null);
@@ -76,7 +77,7 @@ export class GitAuthorProvider {
             }
         }
         keysToDelete.forEach(key => this.cache.delete(key));
-        console.log(`Cleared ${keysToDelete.length} cache entries for file: ${filePath}`);
+        getLogger().info(`Cleared ${keysToDelete.length} cache entries for file: ${filePath}`);
     }
 
     /**
@@ -85,7 +86,7 @@ export class GitAuthorProvider {
     clearAllCache(): void {
         const size = this.cache.size;
         this.cache.clear();
-        console.log(`Cleared all ${size} cache entries`);
+        getLogger().info(`Cleared all ${size} cache entries`);
     }
 
     private executeGitBlame(workingDir: string, filePath: string, lineNumber: number): Promise<AuthorInfo | null> {
@@ -94,11 +95,9 @@ export class GitAuthorProvider {
             // 添加 --show-stats 来获取更详细的信息
             const command = `git blame -L ${lineNumber},${lineNumber} --porcelain "${filePath}"`;
 
-            // console.log(`Executing git blame: ${command}`);
-
             exec(command, { cwd: workingDir }, (error, stdout, stderr) => {
                 if (error) {
-                    console.log(`Git blame error for line ${lineNumber}:`, error.message);
+                    getLogger().info(`Git blame error for line ${lineNumber}:`, error.message);
                     if (error.message.includes('not a git repository') ||
                         error.message.includes('no such file or directory') ||
                         error.message.includes('no such path') ||
@@ -112,7 +111,6 @@ export class GitAuthorProvider {
                 }
 
                 if (stderr) {
-                    // console.warn(`Git blame warning for line ${lineNumber}:`, stderr);
                     // 如果stderr包含关于未提交行的信息，也返回null
                     if (stderr.includes('has only') || stderr.includes('beyond end of file')) {
                         resolve(null);
@@ -120,14 +118,11 @@ export class GitAuthorProvider {
                     }
                 }
 
-                // console.log(`Git blame output for line ${lineNumber}:`, stdout.substring(0, 200) + '...');
-
                 try {
                     const authorInfo = this.parseGitBlameOutput(stdout, lineNumber);
-                    // console.log(`Parsed author info for line ${lineNumber}:`, authorInfo);
                     resolve(authorInfo);
                 } catch (parseError) {
-                    console.error(`Parse error for line ${lineNumber}:`, parseError);
+                    getLogger().error(`Parse error for line ${lineNumber}:`, parseError);
                     resolve(null);
                 }
             });

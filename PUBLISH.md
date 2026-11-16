@@ -1,4 +1,4 @@
-# Git Blame Lens 发布指南
+# Git Blame Lens Next 发布指南
 
 ## 📋 发布前准备清单
 
@@ -8,7 +8,7 @@
 - [x] `CHANGELOG.md` - 版本更新记录
 - [x] `LICENSE` - MIT许可证
 - [x] `icon.svg` - 矢量图标源文件
-- [ ] `icon.png` - 128x128px PNG图标
+- [x] `icon.png` - 128x128px PNG图标
 
 ### 🔧 生成PNG图标
 

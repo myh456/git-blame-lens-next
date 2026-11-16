@@ -1,18 +1,18 @@
 {
-  "name": "git-blame-lens",
-  "displayName": "Git Blame Lens",
-  "description": "🎯 优雅的Git Blame可视化工具 | 显示代码行作者信息和提交历史 | 支持悬停详情和智能缓存",
-  "version": "0.0.4",
-  "publisher": "dreamecho",
+  "name": "git-blame-lens-next",
+  "displayName": "Git Blame Lens Next",
+  "description": "优雅的Git Blame可视化工具 | 显示代码行作者信息和提交历史 | 支持悬停详情和智能缓存",
+  "version": "0.0.5",
+  "publisher": "myh456",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dreamechoc/git-blame-lens.git"
+    "url": "https://github.com/myh456/git-blame-lens-next.git"
   },
   "bugs": {
-    "url": "https://github.com/dreamechoc/git-blame-lens/issues"
+    "url": "https://github.com/myh456/git-blame-lens-next/issues"
   },
-  "homepage": "https://github.com/dreamechoc/git-blame-lens#readme",
+  "homepage": "https://github.com/myh456/git-blame-lens-next#readme",
   "keywords": [
     "git",
     "blame",
@@ -45,22 +45,22 @@
   "contributes": {
     "commands": [
       {
-        "command": "git-author.showFullCommit",
+        "command": "gitBlameLens.showFullCommit",
         "title": "查看文件差异",
         "icon": "$(diff)"
       },
       {
-        "command": "git-author.showBlameAnnotations",
+        "command": "gitBlameLens.showBlameAnnotations",
         "title": "显示 Blame 注释",
         "icon": "$(eye)"
       },
       {
-        "command": "git-author.hideBlameAnnotations",
+        "command": "gitBlameLens.hideBlameAnnotations",
         "title": "隐藏 Blame 注释",
         "icon": "$(eye-closed)"
       },
       {
-        "command": "git-author.refreshBlameAnnotations",
+        "command": "gitBlameLens.refreshBlameAnnotations",
         "title": "刷新 Blame 注释",
         "icon": "$(refresh)"
       }
@@ -68,39 +68,44 @@
     "menus": {
       "editor/context": [
         {
-          "command": "git-author.showBlameAnnotations",
+          "command": "gitBlameLens.showBlameAnnotations",
           "group": "git-blame@1",
-          "when": "editorTextFocus && !git-author.blameActive"
+          "when": "editorTextFocus && !gitBlameLens.blameActive"
         },
         {
-          "command": "git-author.hideBlameAnnotations",
+          "command": "gitBlameLens.hideBlameAnnotations",
           "group": "git-blame@1",
-          "when": "editorTextFocus && git-author.blameActive"
+          "when": "editorTextFocus && gitBlameLens.blameActive"
         },
         {
-          "command": "git-author.refreshBlameAnnotations",
+          "command": "gitBlameLens.refreshBlameAnnotations",
           "group": "git-blame@2",
-          "when": "editorTextFocus && git-author.blameActive"
+          "when": "editorTextFocus && gitBlameLens.blameActive"
         }
       ]
     },
     "configuration": {
-      "title": "Git Blame Lens",
+      "title": "Git Blame Lens Next",
       "properties": {
         "gitBlameLens.showInStatusBar": {
           "type": "boolean",
           "default": true,
           "description": "在状态栏显示当前行的Git作者信息"
         },
-        "gitBlameLens.showOnHover": {
-          "type": "boolean",
-          "default": true,
-          "description": "鼠标悬停时显示详细的提交信息"
-        },
-        "gitBlameLens.enableBlameAnnotations": {
-          "type": "boolean",
-          "default": false,
-          "description": "启动时自动显示Git blame注释"
+        "gitBlameLens.blameInfoType": {
+          "type": "string",
+          "enum": [
+            "None",
+            "HoverPopup",
+            "InlayHints"
+          ],
+          "enumDescriptions": [
+            "不显示任何提交信息",
+            "鼠标悬停时弹出提交信息框",
+            "在光标所在行尾显示内联提示"
+          ],
+          "default": "InlayHints",
+          "description": "Git提交信息的显示方式"
         },
         "gitBlameLens.recentCommitThreshold": {
           "type": "number",
@@ -116,14 +121,14 @@
         },
         "gitBlameLens.preloadLines": {
           "type": "number",
-          "default": 30,
+          "default": 20,
           "minimum": 10,
           "maximum": 100,
           "description": "可见区域上下预加载的行数"
         },
         "gitBlameLens.scrollDebounceMs": {
           "type": "number",
-          "default": 20,
+          "default": 100,
           "minimum": 0,
           "maximum": 200,
           "description": "滚动防抖延迟时间（毫秒）"
@@ -140,17 +145,16 @@
     "package": "vsce package",
     "publish": "vsce publish",
     "generate-icon": "node generate-icon.js",
-    "choose-icon": "node choose-icon.js",
     "setup": "node quick-setup.js",
-    "dist" : "npx vsce package"
+    "dist": "npx vsce package"
   },
   "devDependencies": {
-    "@types/node": "16.x",
+    "@types/node": "^16.18.126",
     "@types/vscode": "^1.74.0",
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@vscode/vsce": "^3.6.0",
+    "@vscode/vsce": "^4.1.0",
     "canvas": "^3.1.1"
   }
 }
