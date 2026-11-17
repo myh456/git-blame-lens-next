@@ -61,6 +61,11 @@ export class BlameDecorationManager implements vscode.Disposable {
         getLogger().info('Git Blame 信息已刷新');
     }
 
+    async onConfigurationChanged(): Promise<void> {
+        this.decorator.recreate();
+        getLogger().info('Git Blame 信息已重置');
+    }
+
     private async showBlameDecorations(): Promise<void> {
         const editor = vscode.window.activeTextEditor;
         if (!editor || this.isLoading) return;

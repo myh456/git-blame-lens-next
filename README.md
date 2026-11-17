@@ -1,6 +1,6 @@
 # Git Blame Lens Next
 
-[![Version](https://img.shields.io/badge/version-0.0.5-blue.svg)](https://marketplace.visualstudio.com/items?itemName=myh456.git-blame-lens-next)
+[![Version](https://img.shields.io/badge/version-0.0.6-blue.svg)](https://marketplace.visualstudio.com/items?itemName=myh456.git-blame-lens-next)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![VSCode](https://img.shields.io/badge/VSCode-1.74.0+-brightgreen.svg)](https://code.visualstudio.com/)
 
@@ -160,6 +160,12 @@ MIT License
 
 ## 更新日志
 
+## [0.0.6] - 2026-11-17
+
+### 修复
+- 🐛 修复文件首次提交时，进行文件差异会报错
+- ✂️ 修复Blame注释显示时，修改Blame注释宽度配置后，已有Blame注释文本裁剪错误
+
 ### 0.0.5 (2026-11-16)
 
 ### 新增
@@ -169,7 +175,7 @@ MIT License
 - 📊 **完善调试日志**：新增LogOutputChannel，可在输出面板直接查看插件日志，同时将原有信息通知改为日志输出
 - 📈 **修改文件差异比较逻辑**：将差异比较改为比较父提交与当前提交之间的差异
 
-## 修复
+### 修复
 - 🐛 修复配置文件不生效问题
 - 📑 修复查看文件差异报错问题
 

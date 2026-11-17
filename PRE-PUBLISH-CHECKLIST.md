@@ -15,7 +15,7 @@
 - [x] `name`: git-blame-lens-next
 - [x] `displayName`: Git Blame Lens Next
 - [x] `description`: 详细描述
-- [x] `version`: 0.0.5
+- [x] `version`: 0.0.6
 - [ ] `publisher`: 替换为实际发布者名称
 - [x] `license`: MIT
 - [x] `repository`: GitHub仓库地址
