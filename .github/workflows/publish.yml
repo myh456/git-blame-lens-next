@@ -21,5 +21,12 @@ jobs:
 
       - run: npm ci
 
-      - name: Publish extension
+      # 发布到 Visual Studio Marketplace
+      - name: Publish to VS Code Marketplace
         run: npx --yes @vscode/vsce publish --oidc
+
+      # 发布到 Open VSX
+      - name: Publish to Open VSX
+        run: npx --yes ovsx publish
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}

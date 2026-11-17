@@ -143,7 +143,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "package": "vsce package",
-    "publish": "vsce publish",
+    "publish-vsmarket": "vsce publish",
+    "publish-openvsx": "ovsx publish",
     "generate-icon": "node generate-icon.js",
     "setup": "node quick-setup.js",
     "dist": "npx vsce package"
@@ -155,6 +156,7 @@
   },
   "dependencies": {
     "@vscode/vsce": "^4.1.0",
+    "ovsx": "^1.3.0",
     "canvas": "^3.1.1"
   }
 }
