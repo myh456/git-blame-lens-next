@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { promisify } from 'util';
+import { execFile } from 'child_process';
 import { initLogger, getLogger } from './logger';
 import { GitAuthorProvider } from './gitAuthorProvider';
 import { StatusBarManager } from './statusBarManager';
@@ -29,7 +31,8 @@ export function activate(context: vscode.ExtensionContext) {
                 hintsProvider.refresh();
             }
             if (e.affectsConfiguration('gitBlameLens.blameAnnotationWidth')) {
-                // TODO:重建装饰器
+                await blameDecorationManager.onConfigurationChanged();
+                await vscode.commands.executeCommand('gitBlameLens.refreshBlameAnnotations')
             }
         }),
         vscode.window.onDidChangeTextEditorSelection(e => {
@@ -112,57 +115,96 @@ async function openCommitInVSCodeGit(commitHash: string): Promise<void> {
 
     const targetLine = editor.selection.active.line;
     const fileName = path.basename(fileUri.fsPath);
+    const short = commitHash.substring(0, 8);
+
+    const toGitUri = (ref: string) =>
+        fileUri.with({
+            scheme: 'git',
+            query: JSON.stringify({ path: fileUri.fsPath, ref })
+        });
+
+    const opts: vscode.TextDocumentShowOptions = {
+        viewColumn: vscode.ViewColumn.Active,
+        preview: false
+    };
+
+    // 预检父提交下该文件是否存在
+    const repoRoot = await getRepoRoot(fileUri.fsPath);
+    if (!repoRoot) {
+        getLogger().error('当前文件不在 Git 仓库中');
+        return;
+    }
+
+    const parentRef = `${commitHash}^`;
+    const hasParentVersion = await fileExistsAtRef(repoRoot, fileUri.fsPath, parentRef);
+    getLogger().debug('showFullCommit: commit=%s parentExists=%s', short, hasParentVersion);
+
+    let leftUri: vscode.Uri;
+    let title: string;
+    if (hasParentVersion) {
+        leftUri = toGitUri(parentRef);
+        title = `${fileName} · ${short} 的改动`;
+    } else {
+        // 首次引入：用空文档做左侧
+        // NOTE：VSCODE文件至少包含一行，所以对比时会出现删除首行添加全文的效果，无法修改
+        const emptyDoc = await vscode.workspace.openTextDocument({ content: '' });
+        leftUri = emptyDoc.uri;
+        title = `${fileName} · ${short}（首次引入）`;
+    }
 
     try {
-        // 把file URI转成指向某rev的git URI
-        const toGitUri = (ref: string) =>
-            fileUri.with({
-                scheme: 'git',
-                query: JSON.stringify({ path: fileUri.fsPath, ref })
-            });
+        await vscode.commands.executeCommand(
+            'vscode.diff', leftUri, toGitUri(commitHash), title, opts
+        );
+    } catch (err) {
+        // 命令本身失败
+        getLogger().error('打开 diff 命令失败: %O', err);
+        return;
+    }
 
-        // 比较父提交与当前提交
-        const leftUri = toGitUri(`${commitHash}^`);
-        const rightUri = toGitUri(commitHash);
-
-        const short = commitHash.substring(0, 8);
-        const title = `${fileName} · ${short} 的改动`;
-
-        const opts: vscode.TextDocumentShowOptions = {
-            viewColumn: vscode.ViewColumn.Active,
-            preview: false
-        };
-
-        try {
-            await vscode.commands.executeCommand(
-                'vscode.diff', leftUri, rightUri, title, opts
-            );
-        } catch (err) {
-            // 该文件不存在父提交，降级为空白文件与该提交
-            await vscode.commands.executeCommand(
-                'vscode.diff',
-                vscode.Uri.parse('untitled:empty'),
-                rightUri,
-                `${fileName} · ${short}（首次引入）`,
-                opts
-            );
-        }
-
-        // 等待diff编辑器成为活动编辑器
-        await new Promise(resolve => setTimeout(resolve, 200));
-        const diffEditor = vscode.window.activeTextEditor;
-        if (!diffEditor) return;
-
-        // 滚动到目标行
-        const line = Math.min(targetLine, diffEditor.document.lineCount - 1);
+    // 滚动到原光标行
+    await new Promise(r => setTimeout(r, 150));
+    const ed = vscode.window.activeTextEditor;
+    if (ed) {
+        const line = Math.min(targetLine, ed.document.lineCount - 1);
         if (line >= 0) {
             const pos = new vscode.Position(line, 0);
-            const range = new vscode.Range(pos, pos);
-            diffEditor.selection = new vscode.Selection(pos, pos);
-            diffEditor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+            ed.selection = new vscode.Selection(pos, pos);
+            ed.revealRange(
+                new vscode.Range(pos, pos),
+                vscode.TextEditorRevealType.InCenter
+            );
         }
-    } catch (err) {
-        vscode.window.showErrorMessage(`无法打开提交差异: ${err instanceof Error ? err.message : String(err)}`);
+    }
+}
+
+const execFileAsync = promisify(execFile);
+
+/** 获取文件所在仓库的根目录，失败返回 null */
+async function getRepoRoot(filePath: string): Promise<string | null> {
+    try {
+        const { stdout } = await execFileAsync(
+            'git', ['-C', path.dirname(filePath), 'rev-parse', '--show-toplevel'],
+            { windowsHide: true }
+        );
+        return stdout.trim() || null;
+    } catch {
+        return null;
+    }
+}
+
+/** 检查 ref 下某文件是否存在 */
+async function fileExistsAtRef(repoRoot: string, filePath: string, ref: string): Promise<boolean> {
+    // git 需要 / 分隔的相对路径
+    const rel = path.relative(repoRoot, filePath).split(path.sep).join('/');
+    try {
+        await execFileAsync(
+            'git', ['-C', repoRoot, 'cat-file', '-e', `${ref}:${rel}`],
+            { windowsHide: true }
+        );
+        return true;
+    } catch {
+        return false;
     }
 }
 
