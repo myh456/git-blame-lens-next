@@ -178,13 +178,12 @@ export class BlameDecorator {
      * 创建悬停提示信息
      */
     private createHoverMessage(authorInfo: AuthorInfo): vscode.MarkdownString {
-        return new vscode.MarkdownString(
-            `**Git Blame**\n\n` +
-            `**作者:** ${authorInfo.author}\n\n` +
-            `**时间:** ${authorInfo.date}\n\n` +
-            `**提交:** \`${authorInfo.commit.substring(0, 8)}\`\n\n` +
-            `**摘要:** ${authorInfo.summary}`
-        );
+        return new vscode.MarkdownString()
+            .appendMarkdown(`**Git 作者信息**\n\n`)
+            .appendMarkdown(`**作者:** ${authorInfo.author}\n\n`)
+            .appendMarkdown(`**提交:** \`${authorInfo.commit}\`\n\n`)
+            .appendMarkdown(`**时间:** ${authorInfo.date}\n\n`)
+            .appendMarkdown(`**摘要:** ${authorInfo.summary}\n\n`);
     }
 
     /**

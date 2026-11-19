@@ -35,7 +35,7 @@ export class StatusBarManager implements vscode.Disposable {
             const filePath = editor.document.uri.fsPath;
 
             // 显示加载状态
-            this.statusBarItem.text = '$(sync~spin) 获取Git信息...';
+            this.statusBarItem.text = '获取Git信息...';
             this.statusBarItem.tooltip = '正在获取Git作者信息';
 
             const authorInfo = await this.gitAuthorProvider.getAuthorInfo(filePath, line + 1);
@@ -55,27 +55,25 @@ export class StatusBarManager implements vscode.Disposable {
 
     private showAuthorInfo(authorInfo: AuthorInfo): void {
         const shortCommit = authorInfo.commit.substring(0, 8);
-        this.statusBarItem.text = `$(person) ${authorInfo.author} (${shortCommit})`;
+        this.statusBarItem.text = `${authorInfo.author} (${shortCommit})`;
 
-        const tooltip = new vscode.MarkdownString();
-        tooltip.appendMarkdown(`**Git 作者信息**\n\n`);
-        tooltip.appendMarkdown(`**作者:** ${authorInfo.author}\n\n`);
-        tooltip.appendMarkdown(`**邮箱:** ${authorInfo.email}\n\n`);
-        tooltip.appendMarkdown(`**提交:** \`${authorInfo.commit}\`\n\n`);
-        tooltip.appendMarkdown(`**时间:** ${authorInfo.date}\n\n`);
-        tooltip.appendMarkdown(`**摘要:** ${authorInfo.summary}\n\n`);
-        tooltip.appendMarkdown(`**行号:** ${authorInfo.line}`);
+        const tooltip = new vscode.MarkdownString()
+            .appendMarkdown(`**Git 作者信息**\n\n`)
+            .appendMarkdown(`**作者:** ${authorInfo.author}\n\n`)
+            .appendMarkdown(`**提交:** \`${authorInfo.commit}\`\n\n`)
+            .appendMarkdown(`**时间:** ${authorInfo.date}\n\n`)
+            .appendMarkdown(`**摘要:** ${authorInfo.summary}\n\n`)
 
         this.statusBarItem.tooltip = tooltip;
     }
 
     private showNoInfo(): void {
-        this.statusBarItem.text = '$(question) 无Git信息';
+        this.statusBarItem.text = '无Git信息';
         this.statusBarItem.tooltip = '当前行没有Git提交信息';
     }
 
     private showError(): void {
-        this.statusBarItem.text = '$(error) Git错误';
+        this.statusBarItem.text = 'Git错误';
         this.statusBarItem.tooltip = '获取Git信息时发生错误';
     }
 

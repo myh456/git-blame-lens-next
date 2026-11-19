@@ -73,14 +73,9 @@ export class BlameDecorationManager implements vscode.Disposable {
         this.currentEditor = editor;
         this.isLoading = true;
         try {
-            await vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: '加载 Git Blame 信息',
-                cancellable: false
-            }, async () => {
-                await this.loadVisibleBlameInfo();
-                if (this.isActive) this.applyBlameDecorations();
-            });
+            getLogger().info('正在加载 Git Blame 信息...');
+            await this.loadVisibleBlameInfo();
+            if (this.isActive) this.applyBlameDecorations();
         } finally {
             this.isLoading = false;
         }
