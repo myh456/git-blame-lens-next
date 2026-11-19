@@ -69,7 +69,7 @@ export class BlameDecorationManager implements vscode.Disposable {
     private async showBlameDecorations(): Promise<void> {
         const editor = vscode.window.activeTextEditor;
         if (!editor || this.isLoading) return;
-
+        if (editor.document.uri.scheme !== 'file') return;
         this.currentEditor = editor;
         this.isLoading = true;
         try {
@@ -110,6 +110,7 @@ export class BlameDecorationManager implements vscode.Disposable {
         if (this.cache.isLineModified(line)) return this.cache.setBlameInfo(line, null);
         try {
             const info = await this.gitAuthorProvider.getAuthorInfo(file, line + 1);
+            getLogger().info(`[blame] line ${line + 1}: info=${info ? info.author : 'null'}`);
             this.cache.setBlameInfo(line, info ?? null);
             if (info) this.cache.setDisplayText(line, this.decorator.generateBlameDisplayText(info));
         } catch (e) {
@@ -130,6 +131,7 @@ export class BlameDecorationManager implements vscode.Disposable {
     private setupScrollListener() {
         this.scrollListener = vscode.window.onDidChangeTextEditorVisibleRanges(async e => {
             if (e.textEditor !== this.currentEditor || !this.isActive) return;
+            if (e.textEditor.document.uri.scheme !== 'file') return;
             if (this.updateTimeout) clearTimeout(this.updateTimeout);
             const config = vscode.workspace.getConfiguration('gitBlameLens');
             this.updateTimeout = setTimeout(async () => {
@@ -169,7 +171,9 @@ export class BlameDecorationManager implements vscode.Disposable {
 
 
     async onActiveEditorChanged(editor: vscode.TextEditor | undefined): Promise<void> {
-        if (this.isActive && editor) {
+        if (!this.isActive) return;
+        if (editor) {
+            if (editor.document.uri.scheme !== 'file') return;
             this.currentEditor = editor;
             this.disposeScrollListener();
             this.setupScrollListener();

@@ -44,7 +44,9 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.onDidChangeActiveTextEditor(async editor => {
             if (editor) {
                 await statusBarManager.updateStatusBar(editor);
-                await blameDecorationManager.onActiveEditorChanged(editor);
+                if (editor.document.uri.scheme === 'file') {
+                    await blameDecorationManager.onActiveEditorChanged(editor);
+                }
             } else {
                 statusBarManager.hideStatusBar();
             }

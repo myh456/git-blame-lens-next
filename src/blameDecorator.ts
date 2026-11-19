@@ -72,6 +72,10 @@ export class BlameDecorator {
      * 应用blame装饰器到编辑器
      */
     applyDecorations(editor: vscode.TextEditor, cache: BlameCache): void {
+        if (editor.document.uri.scheme !== 'file') {
+            this.clearDecorations(editor);
+            return;
+        }
         const visibleRanges = editor.visibleRanges;
         if (visibleRanges.length === 0) {
             return;
